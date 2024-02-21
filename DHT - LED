@@ -1,0 +1,66 @@
+
+
+#include "DHT.h" // Arduino library for DHT11 sensor pin
+#define LED1 5 // Arduino pin connected to led
+#define DHTPIN 2  // Arduino pin connected to DHT11 sensor pin
+
+
+#define DHTTYPE DHT11   
+
+int TEMP_THRESHOLD_UPPER = 25; // upper threshold of temperature, change to your desire value
+int TEMP_THRESHOLD_LOWER = 20; // lower threshold of temperature, change to your desire value
+
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println(F("DHTxx test!"));
+  pinMode(LED1, OUTPUT);
+
+  dht.begin();
+}
+
+void loop() {
+  
+  delay(2000);
+
+  
+  float h = dht.readHumidity();  // temperature in Celsius
+  
+  float t = dht.readTemperature();  // temperature in Celsius
+  
+  float f = dht.readTemperature(true);  // temperature in Fahrenheit (isFahrenheit = true)
+
+   // Check if any reads of sensor failed and exit early (to try again).
+  if (isnan(h) || isnan(t) || isnan(f)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }  else {
+    if (t > TEMP_THRESHOLD_UPPER) {
+      Serial.println("The LED is turned on");
+      digitalWrite(LED1, HIGH);
+    } else if (t < TEMP_THRESHOLD_LOWER) {
+      Serial.println("The LED is turned off");
+      digitalWrite(LED1, LOW);
+    }
+
+  // Compute heat index in Fahrenheit (the default)
+  float hif = dht.computeHeatIndex(f, h);
+
+  // Compute heat index in Celsius (isFahreheit = false)
+  float hic = dht.computeHeatIndex(t, h, false);
+
+  Serial.print(F("Humidity: "));
+  Serial.print(h);
+  Serial.print(F("%  Temperature: "));
+  Serial.print(t);
+  Serial.print(F("°C "));
+  Serial.print(f);
+  Serial.print(F("°F  Heat index: "));
+  Serial.print(hic);
+  Serial.print(F("°C "));
+  Serial.print(hif);
+  Serial.println(F("°F"));
+}
+}
